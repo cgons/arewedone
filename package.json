@@ -1,6 +1,6 @@
 {
   "name": "arewedone",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple JS mini-library that calls a callback when various (tracked) assets are done loading.",
   "main": "arewedone.js",
   "author": "Chrys Gonsalves",

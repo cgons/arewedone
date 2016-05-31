@@ -1,103 +1,118 @@
-describe('The Tracker add method', function() {
+// Testing publc methods
+// ----------------------------------------------
 
-    it('adds an item to the tracking queue', function() {
-        const tracker = new arewedone.Tracker();
-        tracker.add('testitem');
-        expect(tracker.trackingQueue.testitem).toBeDefined();
+describe('The Tracker constructor:', function() {
+
+    it('throws an error if invalid callback function provided', function() {
+        expect(arewedone.Tracker).toThrow();
     });
 
-    it('adds an item to the events map/queue', function() {
-        const tracker = new arewedone.Tracker();
-        tracker.add('testitem');
-        expect(tracker.events.testitem).toBeDefined();
-    });
 });
 
-describe('The Tracker _eventListener method', function() {
+describe('The Tracker add() method:', function() {
 
-    it('removes an item from the loaderQueue (if present) when called', function() {
-        const tracker = new arewedone.Tracker();
-        tracker.trackingQueue.testitem = 1;
+    it('adds the specified item to the queue with required attrs.', function() {
+        var tracker = new arewedone.Tracker(function(){});
+        tracker.add('testasset');
 
-        const mockEvent = { type: 'testitem'};
-        tracker._eventListener(mockEvent);
+        // Ensure the item was added to the queue
+        expect(tracker.trackingQueue.testasset).toBeDefined();
 
-        expect(Object.keys(tracker.trackingQueue).length).toEqual(0);
+        // Ensure the queue item has the requied attrs.
+        var queueItem = tracker.trackingQueue.testasset;
+        expect(queueItem.name).toEqual('testasset');
+        expect(queueItem.status).toEqual(0);
     });
 
-    it('calls the callback function (when there are no more items in the loaderQueue)', function() {
-        const mockCallback = function() {};
+});
 
-        const tracker = new arewedone.Tracker(mockCallback);
+describe('The Tracker markDone() method:', function() {
 
+    it('notifies the tracker that the specified asset is done loading.', function() {
+        var tracker = new arewedone.Tracker(function(){});
+        tracker.add('testasset');
+        tracker.markDone('testasset');
+
+        expect(tracker.trackingQueue.testasset.status).toEqual(1);
+    });
+
+    it('fires the user callback when all assets are loaded.', function() {
+        function mockCallback() {}
+        var tracker = new arewedone.Tracker(mockCallback);
         spyOn(tracker, 'callback');
 
-        const mockEvent = { type: 'testitem'};
-        tracker._eventListener(mockEvent);
+        tracker.add('testasset');
+        tracker.markDone('testasset');
 
         expect(tracker.callback).toHaveBeenCalled();
     });
 
 });
 
-// The tests below are more integration in nature as the Tracker API is used to setup and
-// manipulate state.
-describe('The Tracker performs as expected when', function() {
+describe('The Tracker markFailed() method:', function() {
 
-    it('an asset is done loading resulting in the main callback being called', function() {
-        const mockCallback = function() {};
+    it('notifies the tracker that the specified asset has failed loading.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        tracker.add('testasset');
+        tracker.markFailed('testasset');
 
-        const tracker = new arewedone.Tracker(mockCallback);
-        spyOn(tracker, 'callback');
-
-        tracker.add('testitem');
-        tracker.notify('testitem');
-
-        expect(tracker.callback).toHaveBeenCalled();
+        expect(tracker.trackingQueue.testasset.status).toEqual(-1);
     });
 
-    it('multiple assets are done loading (after delays) resulting in the main callback being called', function(done) {
-        const mockCallback = function() {};
+});
 
-        const tracker = new arewedone.Tracker(mockCallback);
-        spyOn(tracker, 'callback');
 
-        tracker.add('testitem1');
-        tracker.add('testitem2');
+describe('The Tracker anyPending() method:', function() {
 
-        tracker.notify('testitem2');
+    it('returns true if any asset is in a pending state.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        tracker.add('testasset');
+        tracker.add('testasset2');
+        tracker.markDone('testasset');
 
-        // TODO: Use Jasmine's clock functions to mock setTimeout
-        window.setTimeout(function() {
-            tracker.notify('testitem1');
-            expect(tracker.callback).toHaveBeenCalled();
-            done();
-        }, 250);
+        expect(tracker.anyPending()).toEqual(true);
     });
 
-    it('no assets are done loading - ensuring the callback is not called', function() {
-        const mockCallback = function() {};
+    it('returns false if no assets are in a penidng state.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        tracker.add('testasset');
+        tracker.markDone('testasset');
 
-        const tracker = new arewedone.Tracker(mockCallback);
-        spyOn(tracker, 'callback');
+        expect(tracker.anyPending()).toEqual(false);
+    });
+});
 
-        tracker.add('testitem1');
 
-        expect(tracker.callback).not.toHaveBeenCalled();
+// Testing internal methods
+// ----------------------------------------------
+
+describe('The Tracker _assetExists() method:', function() {
+
+    it('throws an error when the asset does not exist.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        expect(tracker._assetExists.bind(tracker, 'fake')).toThrow();
     });
 
-    it('only some assets in the queue are done loading - ensuring the callback is not called', function() {
-        const mockCallback = function() {};
+    it('returns true when an asset exists.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        tracker.add('testasset');
+        expect(tracker._assetExists('testasset')).toEqual(true);
+    })
+});
 
-        const tracker = new arewedone.Tracker(mockCallback);
-        spyOn(tracker, 'callback');
+describe('The Tracker _checkAllLoaded() method:', function() {
 
-        tracker.add('testitem1');
-        tracker.add('testitem2');
+    it('returns true when all tracked assets are loaded.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        tracker.add('testasset');
+        tracker.markDone('testasset');
+        expect(tracker._checkAllLoaded()).toEqual(true);
+    });
 
-        tracker.notify('testitem2');
-
-        expect(tracker.callback).not.toHaveBeenCalled();
+    it('returns false when any tracked asset is pending/failed to load.', function() {
+        var tracker = new arewedone.Tracker(function() {});
+        tracker.add('testasset');
+        expect(tracker._checkAllLoaded()).toEqual(false);
     });
 
 });
