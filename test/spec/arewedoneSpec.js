@@ -40,7 +40,7 @@ describe('The Tracker _eventListener method', function() {
 
 });
 
-// The tests below are more integration in nature as the Loader API is used to setup and
+// The tests below are more integration in nature as the Tracker API is used to setup and
 // manipulate state.
 describe('The Tracker performs as expected when', function() {
 
