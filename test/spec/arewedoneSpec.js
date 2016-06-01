@@ -61,7 +61,6 @@ describe('The Tracker markFailed() method:', function() {
 
 });
 
-
 describe('The Tracker anyPending() method:', function() {
 
     it('returns true if any asset is in a pending state.', function() {

@@ -4,6 +4,7 @@
   "description": "A simple JS mini-library that calls a callback when various (tracked) assets are done loading.",
   "main": "arewedone.js",
   "author": "Chrys Gonsalves",
+  "repository": "cgons/arewedone",
   "keywords": [
     "lib",
     "library",
