@@ -39,11 +39,40 @@ jqScriptTag.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.mi
 
 // When the jQuery script tag is loaded, the browser will execute the onload function below 
 // In the onload function, we notify our tracker that jQuery is done loading
-jqScriptTag.onload = function() { tracker.notify('jquery'); };
+jqScriptTag.onload = function() {
+
+  tracker.markDone('jquery'); // this is the magic
+  
+};
 ```
 
 That's it!
 Once jQuery has loaded, our tracker will be notified and if no other assets are waiting to load, it will call `mycallback`.
+
+
+###API
+Adding an asset to be tracked.
+```javascript
+tracker.add('asset_name')
+```
+Marking an asset as done.
+```javascript
+tracker.markDone('asset_name')
+```
+Marking an asset as failed (was not able to load).
+```javascript
+tracker.markFailed('asset_name')
+```
+Determine if any assets are pending (not yet marked as done/loaded).
+```javascript
+tracker.anyPending() // returns true or false
+```
+
+Note: arewedone.js will only call the provided callback when **ALL** tracked assets have been marked as done. 
+
+
+*_The source [(arewedone.js)](https://github.com/cgons/arewedone/blob/master/arewedone.js) is very readable and documented -
+making it an excellent resource to clarify any questions that arise._
 
 -
 
